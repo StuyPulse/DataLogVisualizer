@@ -1,2 +1,3 @@
-# LogGrapher
-Visualizer for output from the WPILib Data Log Tool
+# DataLogVisualizer
+
+Visualizer to pair with the WPILib DataLogTool
