@@ -1,13 +1,14 @@
-from enum import Enum
+from enum import Enum, auto
 from typing import Union
 
-class Type(Enum):
-    NUMBER = 1
-    BOOLEAN = 2
-    STRING = 3
 
-# Digest = tuple[Type, (float | bool | str)]
-Digest = tuple[Type, Union[float, bool, str]]
+class Type(Enum):
+    NUMBER = auto()
+    BOOLEAN = auto()
+    STRING = auto()
+
+Value = Union[float, bool, str] # float | bool | str
+Digest = tuple[Type, Value]
 def digest(raw: str) -> Digest:
     if raw in ("true", "false"):
         return Type.BOOLEAN, raw[0] == "t"
@@ -22,9 +23,9 @@ class Data:
         self.time = time
         self.type, self.value = digest(raw)
     
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.value} at {self.time}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Data({str(self)})"
     
