@@ -15,7 +15,7 @@ repositories {
     mavenCentral()
 }
 
-final String STUYLIB_VERSION = 'v2022.7.0'
+final String STUYLIB_VERSION = 'v2022.7.2'
 
 dependencies {
     testImplementation 'junit:junit:4.13.2'
