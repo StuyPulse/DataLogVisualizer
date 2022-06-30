@@ -12,8 +12,6 @@ import edu.wpi.first.util.datalog.DataLogRecord.StartRecordData;
 
 public class EntryReader {
 
-	private DataLogReader reader;
-
 	private Map<Integer, String> names;
 	private Map<String, List<DataEntry>> data;
 	private Map<String, String> types;
@@ -24,7 +22,7 @@ public class EntryReader {
 		types = new HashMap<String, String>();
 
 		try {
-			reader = new DataLogReader(filename);
+			DataLogReader reader = new DataLogReader(filename);
 			
 			reader.forEach(x -> {
 				if (x.isStart()) {
