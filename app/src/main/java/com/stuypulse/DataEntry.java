@@ -184,4 +184,17 @@ public class DataEntry {
 		return isType(DataType.ARR_BOOLEAN);
 	}
 
+	public boolean isNumeric() {
+		return isType(DataType.DOUBLE) || isType(DataType.INTEGER) || isType(DataType.BOOLEAN);
+	}
+
+
+	public double asDouble() {
+		if (isDouble()) return d;
+		if (isInteger()) return i;
+		if (isBoolean()) return bool ? 1 : 0;
+
+		return 0.0;
+	}
+
 }
