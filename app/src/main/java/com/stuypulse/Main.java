@@ -2,6 +2,7 @@ package com.stuypulse;
 
 import java.util.List;
 
+import com.stuypulse.DataEntry.DataType;
 import com.stuypulse.stuylib.math.Vector2D;
 import com.stuypulse.stuylib.math.interpolation.Interpolator;
 import com.stuypulse.stuylib.math.interpolation.NearestInterpolator;
@@ -38,6 +39,24 @@ public class Main {
                         .setAxes(TITLE, X_AXIS, Y_AXIS)
                         .setXRange(MIN_X, MAX_X)
                         .setYRange(MIN_Y, MAX_Y);
+
+        DataType[] NUMERIC = { DataType.DOUBLE, DataType.INTEGER, DataType.BOOLEAN };
+
+        public static double asDouble(DataEntry entry) {
+            if (entry.isDouble()) {
+                return entry.getDouble();
+            }
+
+            if (entry.isInteger()) {
+                return entry.getInteger();
+            }
+
+            if (entry.isBoolean()) {
+                return entry.getBoolean() ? 1 : 0;
+            }
+
+            return 0.0;
+        }
         
         public static Interpolator interpolate(List<DataEntry> data) {
             Vector2D[] points = new Vector2D[data.size()];
@@ -45,14 +64,14 @@ public class Main {
             for (int i = 0; i < data.size(); i++) {
                 DataEntry entry = data.get(i);
 
-                points[i] = new Vector2D(entry.seconds, entry.asDouble());
+                points[i] = new Vector2D(entry.seconds, asDouble(entry));
             }
 
             return new NearestInterpolator(Bias.kLeft, points);
         }
 
         public static Series make(String label, List<DataEntry> data) {
-            if (data.get(0).isNumeric()) {
+            if (data.get(0).isType(NUMERIC)) {
                 return new FuncSeries(
                     new Config(label, CAPACITY),
                     new Domain(MIN_X, MAX_X),
@@ -66,11 +85,11 @@ public class Main {
         }
 
         public static Series make(String label, List<DataEntry> xData, List<DataEntry> yData) {
-            if (xData.get(0).isNumeric() && yData.get(0).isNumeric() && xData.size() == yData.size()) {
+            if (xData.get(0).isType(NUMERIC) && yData.get(0).isType(NUMERIC) && xData.size() == yData.size()) {
                 Vector2D[] points = new Vector2D[xData.size()];
 
                 for (int i = 0; i < yData.size(); i++) {
-                    points[i] = new Vector2D(xData.get(i).asDouble(), yData.get(i).asDouble());
+                    points[i] = new Vector2D(asDouble(xData.get(i)), asDouble(yData.get(i)));
                 }
 
                 return new DataSeries(label, points);

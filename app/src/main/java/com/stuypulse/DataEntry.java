@@ -33,16 +33,16 @@ public class DataEntry {
 	
 	public DataType type;
 
-	public byte[] raw;
-	public String string;
-	public double d;
-	public long i;
-	public boolean bool;
+	private byte[] raw;
+	private String string;
+	private double d;
+	private long i;
+	private boolean bool;
 
-	public String[] stringArray;
-	public double[] doubleArray;
-	public long[] intArray;
-	public boolean[] boolArray;
+	private String[] stringArray;
+	private double[] doubleArray;
+	private long[] intArray;
+	private boolean[] boolArray;
 
 	public static DataEntry fromRecord(String type, DataLogRecord record) {
 		DataType t = DataType.fromString(type);
@@ -144,8 +144,12 @@ public class DataEntry {
 	}
 
 
-	public boolean isType(DataType type) {
-		return this.type == type;
+	public boolean isType(DataType... type) {
+		for (DataType t : type) {
+			if (this.type == t) return true;
+		}
+
+		return false;
 	}
 
 	public boolean isString() {
@@ -184,17 +188,41 @@ public class DataEntry {
 		return isType(DataType.ARR_BOOLEAN);
 	}
 
-	public boolean isNumeric() {
-		return isType(DataType.DOUBLE) || isType(DataType.INTEGER) || isType(DataType.BOOLEAN);
+
+	public String getString() {
+		return string;
 	}
 
+	public double getDouble() {
+		return d;
+	}
 
-	public double asDouble() {
-		if (isDouble()) return d;
-		if (isInteger()) return i;
-		if (isBoolean()) return bool ? 1 : 0;
+	public long getInteger() {
+		return i;
+	}
 
-		return 0.0;
+	public boolean getBoolean() {
+		return bool;
+	}
+
+	public byte[] getRaw() {
+		return raw;
+	}
+
+	public String[] getStringArray() {
+		return stringArray;
+	}
+
+	public double[] getDoubleArray() {
+		return doubleArray;
+	}
+
+	public long[] getIntegerArray() {
+		return intArray;
+	}
+
+	public boolean[] getBooleanArray() {
+		return boolArray;
 	}
 
 }
