@@ -2,8 +2,8 @@ package com.stuypulse;
 
 import java.util.List;
 
-import com.stuypulse.DataEntry.DataType;
 import com.stuypulse.stuylib.math.Vector2D;
+import com.stuypulse.stuylib.math.interpolation.Interpolator;
 import com.stuypulse.stuylib.math.interpolation.NearestInterpolator;
 import com.stuypulse.stuylib.math.interpolation.NearestInterpolator.Bias;
 import com.stuypulse.stuylib.util.plot.FuncSeries;
@@ -38,45 +38,45 @@ public class Main {
                         .setAxes(TITLE, X_AXIS, Y_AXIS)
                         .setXRange(MIN_X, MAX_X)
                         .setYRange(MIN_Y, MAX_Y);
+        
+        public static Interpolator interpolate(List<DataEntry> data) {
+            Vector2D[] points = new Vector2D[data.size()];
 
-        public static Series make(String key, List<DataEntry> data) {
-            DataType t = data.get(0).type;
+            for (int i = 0; i < data.size(); i++) {
+                DataEntry entry = data.get(i);
 
-            double start = Double.POSITIVE_INFINITY;
-            double end = Double.NEGATIVE_INFINITY;
+                points[i] = new Vector2D(entry.seconds, entry.asDouble());
+            }
 
-            if (t == DataType.BOOLEAN || t == DataType.INTEGER || t == DataType.DOUBLE) {
-                Vector2D[] points = new Vector2D[data.size()];
+            return new NearestInterpolator(Bias.kLeft, points);
+        }
 
-                for (int i = 0; i < data.size(); i++) {
-                    DataEntry entry = data.get(i);
-                    
-                    if (entry.isBoolean()) {
-                        points[i] = new Vector2D(entry.seconds, entry.bool ? 1 : 0);
-                    } else if (entry.isInteger()) {
-                        points[i] = new Vector2D(entry.seconds, entry.i);
-                    } else {
-                        points[i] = new Vector2D(entry.seconds, entry.d);
-                    }
-
-                    if (start > entry.seconds) {
-                        start = entry.seconds;
-                    }
-
-                    if (end < entry.seconds) {
-                        end = entry.seconds;
-                    }
-                }
-
-                NearestInterpolator interp = new NearestInterpolator(Bias.kLeft, points);
-
+        public static Series make(String label, List<DataEntry> data) {
+            if (data.get(0).isNumeric()) {
                 return new FuncSeries(
-                    new Config(key, CAPACITY),
-                    new Domain(start, end),
-                    interp);
+                    new Config(label, CAPACITY),
+                    new Domain(MIN_X, MAX_X),
+                    interpolate(data));
             } else {
                 return new TimeSeries(
-                    new Config(key, CAPACITY),
+                    new Config(label, CAPACITY),
+                    new TimeSpan(MIN_X, MAX_X),
+                    () -> Double.NaN);
+            }
+        }
+
+        public static Series make(String label, List<DataEntry> xData, List<DataEntry> yData) {
+            if (xData.get(0).isNumeric() && yData.get(0).isNumeric() && xData.size() == yData.size()) {
+                Vector2D[] points = new Vector2D[xData.size()];
+
+                for (int i = 0; i < yData.size(); i++) {
+                    points[i] = new Vector2D(xData.get(i).asDouble(), yData.get(i).asDouble());
+                }
+
+                return new DataSeries(label, points);
+            } else {
+                return new TimeSeries(
+                    new Config(label, CAPACITY),
                     new TimeSpan(MIN_X, MAX_X),
                     () -> Double.NaN);
             }
