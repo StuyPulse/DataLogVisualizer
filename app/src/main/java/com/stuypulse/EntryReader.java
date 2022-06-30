@@ -29,6 +29,7 @@ public class EntryReader {
 					StartRecordData start = x.getStartData();
 	
 					names.put(start.entry, start.name);
+					types.put(start.name, start.type);
 				} else if (!x.isControl()) {
 					addRecord(x);
 				}
