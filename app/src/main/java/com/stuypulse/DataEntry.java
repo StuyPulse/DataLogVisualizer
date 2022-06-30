@@ -6,27 +6,30 @@ public class DataEntry {
 	public enum DataType {
 		STRING,
 		DOUBLE,
-		INTEGER;
+		INTEGER,
+		BOOLEAN;
 
 		public static DataType fromString(String type) {
 			switch (type) {
-				case "string": return STRING;
-				case "int64":  return INTEGER;
-				default:       return DOUBLE;
+				case "string":  return STRING;
+				case "int64":   return INTEGER;
+				case "boolean": return BOOLEAN;
+				default:        return DOUBLE;
 			}
 		}
 	};
 
-	public final long timestamp;
+	public final double milliseconds;
 	
 	public final String str;
 	public final double d;
 	public final long i;
+	public final boolean b;
 
 	public final DataType type;
 
 	public DataEntry(String typeString, DataLogRecord record) {
-		timestamp = record.getTimestamp();
+		milliseconds = ((double)record.getTimestamp()) / 1000.0;
 		type = DataType.fromString(typeString);
 
 		if (type == DataType.STRING) {
@@ -46,12 +49,14 @@ public class DataEntry {
 		} else {
 			i = 0;
 		}
+		if (type == DataType.BOOLEAN) {
+			b = record.getBoolean();
+		} else {
+			b = false;
+		}
 	}
 
 	public double getSeconds() {
-		return ((double)timestamp) / 1000000.0;
-	}
-	public double getMilliseconds() {
-		return ((double)timestamp) / 1000.0;
+		return milliseconds / 1000.0;
 	}
 }
