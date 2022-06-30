@@ -8,57 +8,180 @@ public class DataEntry {
 		DOUBLE,
 		INTEGER,
 		BOOLEAN,
-		ARRAY;
+		RAW,
+		ARR_STRING,
+		ARR_DOUBLE,
+		ARR_INTEGER,
+		ARR_BOOLEAN;
 
 		public static DataType fromString(String type) {
 			switch (type) {
-				case "string":  return STRING;
-				case "int64":   return INTEGER;
-				case "boolean": return BOOLEAN;
-				case "double":  return DOUBLE;
-				default:        return ARRAY;
+				case "string":    return STRING;
+				case "int64":     return INTEGER;
+				case "boolean":   return BOOLEAN;
+				case "double":    return DOUBLE;
+				case "string[]":  return ARR_STRING;
+				case "int64[]":   return ARR_INTEGER;
+				case "boolean[]": return ARR_BOOLEAN;
+				case "double[]":  return ARR_DOUBLE;
+				default:          return RAW;
 			}
 		}
 	};
 
-	public final double milliseconds;
+	public double seconds;
 	
-	public final String str;
-	public final double d;
-	public final long i;
-	public final boolean b;
+	public DataType type;
 
-	public final DataType type;
+	public byte[] raw;
+	public String string;
+	public double d;
+	public long i;
+	public boolean bool;
 
-	public DataEntry(String typeString, DataLogRecord record) {
-		milliseconds = ((double)record.getTimestamp()) / 1000.0;
-		type = DataType.fromString(typeString);
+	public String[] stringArray;
+	public double[] doubleArray;
+	public long[] intArray;
+	public boolean[] boolArray;
 
-		if (type == DataType.STRING) {
-			str = record.getString();
-		} else {
-			str = "";
-		}
-		
-		if (type == DataType.DOUBLE) {
-			d = record.getDouble();
-		} else {
-			d = 0.0;
-		}
-		
-		if (type == DataType.INTEGER) {
-			i = record.getInteger();
-		} else {
-			i = 0;
-		}
-		if (type == DataType.BOOLEAN) {
-			b = record.getBoolean();
-		} else {
-			b = false;
+	public static DataEntry fromRecord(String type, DataLogRecord record) {
+		DataType t = DataType.fromString(type);
+		double seconds = ((double)record.getTimestamp()) / 1000000.0;
+
+		switch (t) {
+			case STRING:      return new DataEntry(seconds, record.getString());
+			case DOUBLE:      return new DataEntry(seconds, record.getDouble());
+			case INTEGER:     return new DataEntry(seconds, record.getInteger());
+			case BOOLEAN:     return new DataEntry(seconds, record.getBoolean());
+			case RAW:         return new DataEntry(seconds, record.getRaw());
+			case ARR_STRING:  return new DataEntry(seconds, record.getStringArray());
+			case ARR_DOUBLE:  return new DataEntry(seconds, record.getDoubleArray());
+			case ARR_INTEGER: return new DataEntry(seconds, record.getIntegerArray());
+			case ARR_BOOLEAN: return new DataEntry(seconds, record.getBooleanArray());
+			default: throw new Error("Invalid string type");
 		}
 	}
 
-	public double getSeconds() {
-		return milliseconds / 1000.0;
+
+	public DataEntry(double seconds) {
+		this.seconds = seconds;
+
+		type = null;
+
+		string = "";
+		d = 0.0;
+		i = 0;
+		bool = false;
+
+		raw = null;
+		stringArray = null;
+		doubleArray = null;
+		intArray = null;
+		boolArray = null;
 	}
+
+	public DataEntry(double seconds, String val) {
+		this(seconds);
+
+		type = DataType.STRING;
+		string = val;
+	}
+
+	public DataEntry(double seconds, double val) {
+		this(seconds);
+
+		type = DataType.DOUBLE;
+		d = val;
+	}
+
+	public DataEntry(double seconds, long val) {
+		this(seconds);
+
+		type = DataType.INTEGER;
+		i = val;
+	}
+
+	public DataEntry(double seconds, boolean val) {
+		this(seconds);
+
+		type = DataType.BOOLEAN;
+		bool = val;
+	}
+
+	public DataEntry(double seconds, byte[] val) {
+		this(seconds);
+
+		type = DataType.RAW;
+		raw = val;
+	}
+
+	public DataEntry(double seconds, String[] val) {
+		this(seconds);
+
+		type = DataType.ARR_STRING;
+		stringArray = val;
+	}
+
+	public DataEntry(double seconds, double[] val) {
+		this(seconds);
+
+		type = DataType.ARR_DOUBLE;
+		doubleArray = val;
+	}
+
+	public DataEntry(double seconds, long[] val) {
+		this(seconds);
+
+		type = DataType.ARR_INTEGER;
+		intArray = val;
+	}
+
+	public DataEntry(double seconds, boolean[] val) {
+		this(seconds);
+
+		type = DataType.ARR_BOOLEAN;
+		boolArray = val;
+	}
+
+
+	public boolean isType(DataType type) {
+		return this.type == type;
+	}
+
+	public boolean isString() {
+		return isType(DataType.STRING);
+	}
+
+	public boolean isDouble() {
+		return isType(DataType.DOUBLE);
+	}
+
+	public boolean isInteger() {
+		return isType(DataType.INTEGER);
+	}
+
+	public boolean isBoolean() {
+		return isType(DataType.BOOLEAN);
+	}
+
+	public boolean isRaw() {
+		return isType(DataType.RAW);
+	}
+
+	public boolean isStringArray() {
+		return isType(DataType.ARR_STRING);
+	}
+
+	public boolean isDoubleArray() {
+		return isType(DataType.ARR_DOUBLE);
+	}
+
+	public boolean isIntegerArray() {
+		return isType(DataType.ARR_INTEGER);
+	}
+
+	public boolean isBooleanArray() {
+		return isType(DataType.ARR_BOOLEAN);
+	}
+
 }
