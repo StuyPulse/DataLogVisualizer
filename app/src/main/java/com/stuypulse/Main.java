@@ -27,10 +27,10 @@ public class Main {
         int HEIGHT = 600;
 
         double MIN_X = 0.0;
-        double MAX_X = 150.0;
+        double MAX_X = 400.0;
 
         double MIN_Y = 0.0;
-        double MAX_Y = 3000.0;
+        double MAX_Y = 3500.0;
 
         Settings SETTINGS =
                 new Settings()
@@ -39,46 +39,57 @@ public class Main {
                         .setXRange(MIN_X, MAX_X)
                         .setYRange(MIN_Y, MAX_Y);
 
-        public static Series make(String entry, List<DataEntry> data) {
+        public static Series make(String key, List<DataEntry> data) {
             DataType t = data.get(0).type;
 
-            if (t == DataType.STRING || t == DataType.ARRAY) {
-                return new TimeSeries(
-                    new Config(entry, CAPACITY),
-                    new TimeSpan(MIN_X, MAX_X),
-                    () -> Double.NaN);
-            } else {
+            double start = Double.POSITIVE_INFINITY;
+            double end = Double.NEGATIVE_INFINITY;
+
+            if (t == DataType.BOOLEAN || t == DataType.INTEGER || t == DataType.DOUBLE) {
                 Vector2D[] points = new Vector2D[data.size()];
 
                 for (int i = 0; i < data.size(); i++) {
-                    double seconds = data.get(i).getSeconds();
+                    DataEntry entry = data.get(i);
                     
-                    if (t == DataType.BOOLEAN) {
-                        points[i] = new Vector2D(seconds, data.get(i).b ? 1 : 0);
-                    } else if (t == DataType.INTEGER) {
-                        points[i] = new Vector2D(seconds, data.get(i).i);
+                    if (entry.isBoolean()) {
+                        points[i] = new Vector2D(entry.seconds, entry.bool ? 1 : 0);
+                    } else if (entry.isInteger()) {
+                        points[i] = new Vector2D(entry.seconds, entry.i);
                     } else {
-                        points[i] = new Vector2D(seconds, data.get(i).d);
+                        points[i] = new Vector2D(entry.seconds, entry.d);
+                    }
+
+                    if (start > entry.seconds) {
+                        start = entry.seconds;
+                    }
+
+                    if (end < entry.seconds) {
+                        end = entry.seconds;
                     }
                 }
 
                 NearestInterpolator interp = new NearestInterpolator(Bias.kLeft, points);
 
                 return new FuncSeries(
-                    new Config(entry, CAPACITY),
-                    new Domain(MIN_X, MAX_X),
+                    new Config(key, CAPACITY),
+                    new Domain(start, end),
                     interp);
+            } else {
+                return new TimeSeries(
+                    new Config(key, CAPACITY),
+                    new TimeSpan(MIN_X, MAX_X),
+                    () -> Double.NaN);
             }
         }
     }
 
     public static void main(String[] args) throws InterruptedException {
-        EntryReader reader = new EntryReader("C:\\Users\\bengo\\Documents\\Programming\\DataLogVisualizer\\FRC_20220421_181140_GALILEO_Q28.wpilog");
+        LoggedData reader = LoggedData.fromFile("C:\\Users\\bengo\\Documents\\Programming\\DataLogVisualizer\\FRC_20220421_181140_GALILEO_Q28.wpilog");
         Plot plot = new Plot(Constants.SETTINGS);
 
-        String entry = "NT:/SmartDashboard/Shooter/Target RPM";
+        String key = "NT:/SmartDashboard/Shooter/Target RPM";
 
-        plot.addSeries(Constants.make(entry, reader.getData(entry)));
+        plot.addSeries(Constants.make(key, reader.getData(key)));
 
         while (plot.isRunning()) {
             plot.update();
