@@ -7,14 +7,16 @@ public class DataEntry {
 		STRING,
 		DOUBLE,
 		INTEGER,
-		BOOLEAN;
+		BOOLEAN,
+		ARRAY;
 
 		public static DataType fromString(String type) {
 			switch (type) {
 				case "string":  return STRING;
 				case "int64":   return INTEGER;
 				case "boolean": return BOOLEAN;
-				default:        return DOUBLE;
+				case "double":  return DOUBLE;
+				default:        return ARRAY;
 			}
 		}
 	};
