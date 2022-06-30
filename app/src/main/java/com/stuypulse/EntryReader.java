@@ -12,38 +12,41 @@ import edu.wpi.first.util.datalog.DataLogRecord.StartRecordData;
 
 public class EntryReader {
 
-	private final DataLogReader reader;
+	private DataLogReader reader;
 
 	private Map<Integer, String> names;
 	private Map<String, List<DataEntry>> data;
 	private Map<String, String> types;
 
-	public EntryReader(String filename) throws IOException {
-		reader = new DataLogReader(filename);
-
+	public EntryReader(String filename) {
 		names = new HashMap<Integer, String>();
 		data = new HashMap<String, List<DataEntry>>();
 		types = new HashMap<String, String>();
-		
-		reader.forEach(x -> {
-			if (x.isStart()) {
-				StartRecordData start = x.getStartData();
 
-				names.put(start.entry, start.name);
-			} else if (!x.isControl()) {
-				addRecord(x);
-			}
-		});
+		try {
+			reader = new DataLogReader(filename);
+			
+			reader.forEach(x -> {
+				if (x.isStart()) {
+					StartRecordData start = x.getStartData();
+	
+					names.put(start.entry, start.name);
+				} else if (!x.isControl()) {
+					addRecord(x);
+				}
+			});
+		} catch (IOException e) {
+			System.err.println("Failed to open file " + filename + "!");
+		}
 	}
 
 	private void addRecord(DataLogRecord r) {
 		String name = names.get(r.getEntry());
-
 		DataEntry entry = new DataEntry(types.get(name), r);
 		
-		try {
+		if (data.containsKey(name)) {
 			data.get(name).add(entry);
-		} catch (NullPointerException e) {
+		} else {
 			List<DataEntry> l = new ArrayList<DataEntry>();
 			
 			l.add(entry);
