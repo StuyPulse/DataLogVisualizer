@@ -1,5 +1,6 @@
 package com.stuypulse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.stuypulse.stuylib.math.Vector2D;
@@ -12,6 +13,9 @@ public class DataSeries extends Series {
 
 	public DataSeries(String label, Vector2D... points) {
 		super(new Config(label, points.length), false);
+
+		xValues = new ArrayList<Double>();
+		yValues = new ArrayList<Double>();
 
 		for (Vector2D point : points) {
 			xValues.add(point.x);
