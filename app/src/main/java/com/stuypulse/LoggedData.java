@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.wpi.first.util.datalog.DataLogReader;
 import edu.wpi.first.util.datalog.DataLogRecord;
@@ -62,6 +63,10 @@ public class LoggedData {
 				data.put(name, l);
 			}
 		}
+	}
+
+	public Set<String> getNames() {
+		return data.keySet();
 	}
 
 	public List<DataEntry> getData(String name) {
