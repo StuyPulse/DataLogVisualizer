@@ -1,5 +1,6 @@
 package com.stuypulse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.stuypulse.DataEntry.DataType;
@@ -28,10 +29,10 @@ public class Main {
         int HEIGHT = 600;
 
         double MIN_X = 0.0;
-        double MAX_X = 400.0;
+        double MAX_X = 16.5;
 
         double MIN_Y = 0.0;
-        double MAX_Y = 3500.0;
+        double MAX_Y = 8.2;
 
         Settings SETTINGS =
                 new Settings()
@@ -46,36 +47,40 @@ public class Main {
             if (entry.isDouble()) {
                 return entry.getDouble();
             }
-
+    
             if (entry.isInteger()) {
                 return entry.getInteger();
             }
-
+    
             if (entry.isBoolean()) {
                 return entry.getBoolean() ? 1 : 0;
             }
-
+    
             return 0.0;
-        }
-        
-        public static Interpolator interpolate(List<DataEntry> data) {
-            Vector2D[] points = new Vector2D[data.size()];
-
-            for (int i = 0; i < data.size(); i++) {
-                DataEntry entry = data.get(i);
-
-                points[i] = new Vector2D(entry.seconds, asDouble(entry));
-            }
-
-            return new NearestInterpolator(Bias.kLeft, points);
         }
 
         public static Series make(String label, List<DataEntry> data) {
             if (data.get(0).isType(NUMERIC)) {
+                List<Vector2D> points = new ArrayList<Vector2D>();
+    
+                double prevEntry = Double.NaN;
+
+                for (int i = 0; i < data.size(); i++) {
+                    DataEntry entry = data.get(i);
+                    double val = asDouble(entry);
+    
+                    if (val != prevEntry) {
+                        points.add(new Vector2D(entry.seconds, val));  
+                        prevEntry = val;
+                    }
+                }
+    
+                Interpolator interp = new NearestInterpolator(Bias.kLeft, points.toArray(new Vector2D[0]));
+
                 return new FuncSeries(
                     new Config(label, CAPACITY),
                     new Domain(MIN_X, MAX_X),
-                    interpolate(data));
+                    interp);
             } else {
                 return new TimeSeries(
                     new Config(label, CAPACITY),
@@ -102,13 +107,22 @@ public class Main {
         }
     }
 
+    private static void printData(LoggedData data) {
+        data.getNames().forEach(name -> {
+            data.getData(name).forEach(record -> {
+                System.out.println(record.seconds + ",\"" + name + "\"," + record);
+            });
+        });
+    }
+
     public static void main(String[] args) throws InterruptedException {
-        LoggedData reader = LoggedData.fromFile("C:\\Users\\bengo\\Documents\\Programming\\DataLogVisualizer\\FRC_20220421_181140_GALILEO_Q28.wpilog");
+        LoggedData data = LoggedData.fromFile("C:\\Users\\bengo\\Documents\\Programming\\DataLogVisualizer\\FRC_20220701_010412.wpilog");
         Plot plot = new Plot(Constants.SETTINGS);
 
-        String key = "NT:/SmartDashboard/Shooter/Target RPM";
-
-        plot.addSeries(Constants.make(key, reader.getData(key)));
+        plot.addSeries(Constants.make(
+            "Robot Position",
+            data.getData("NT:/SmartDashboard/Debug/Drivetrain/Odometer X Position (m)"),
+            data.getData("NT:/SmartDashboard/Debug/Drivetrain/Odometer Y Position (m)")));
 
         while (plot.isRunning()) {
             plot.update();
