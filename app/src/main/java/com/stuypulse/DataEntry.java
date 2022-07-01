@@ -1,5 +1,7 @@
 package com.stuypulse;
 
+import java.util.Arrays;
+
 import edu.wpi.first.util.datalog.DataLogRecord;
 
 public class DataEntry {
@@ -223,6 +225,21 @@ public class DataEntry {
 
 	public boolean[] getBooleanArray() {
 		return boolArray;
+	}
+
+
+	public String toString() {
+		switch (type) {
+			case STRING:      return getString();
+			case DOUBLE:      return Double.toString(d);
+			case INTEGER:     return Long.toString(i);
+			case BOOLEAN:     return Boolean.toString(bool);
+			case RAW:         return Arrays.toString(raw);
+			case ARR_STRING:  return Arrays.toString(stringArray);
+			case ARR_DOUBLE:  return Arrays.toString(doubleArray);
+			case ARR_INTEGER: return Arrays.toString(intArray);
+			default:          return Arrays.toString(boolArray);
+		}
 	}
 
 }
