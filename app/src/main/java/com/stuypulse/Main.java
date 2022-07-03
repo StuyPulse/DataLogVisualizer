@@ -36,7 +36,6 @@ public class Main {
 
         Settings SETTINGS =
                 new Settings()
-                        .setSize(WIDTH, HEIGHT)
                         .setAxes(TITLE, X_AXIS, Y_AXIS)
                         .setXRange(MIN_X, MAX_X)
                         .setYRange(MIN_Y, MAX_Y);
@@ -109,22 +108,39 @@ public class Main {
 
     private static void printData(LoggedData data) {
         data.getNames().forEach(name -> {
-            data.getData(name).forEach(record -> {
-                System.out.println(record.seconds + ",\"" + name + "\"," + record);
-            });
+            System.out.println(name);
+            // data.getData(name).forEach(record -> {
+            //     System.out.println(record.seconds + ",\"" + name + "\"," + record);
+            // });
         });
     }
 
     public static void main(String[] args) throws InterruptedException {
         LoggedData data = LoggedData.fromFile("C:\\Users\\bengo\\Documents\\Programming\\DataLogVisualizer\\FRC_20220701_010412.wpilog");
-        Plot plot = new Plot(Constants.SETTINGS);
+        
+        Plot plot = new Plot();
 
-        plot.addSeries(Constants.make(
-            "Robot Position",
-            data.getData("NT:/SmartDashboard/Debug/Drivetrain/Odometer X Position (m)"),
-            data.getData("NT:/SmartDashboard/Debug/Drivetrain/Odometer Y Position (m)")));
+        plot.addPlot(Constants.SETTINGS.setTitle("Robot Pos"))
+            .addSeries(
+                Constants.make(
+                    "Robot Position",
+                    data.getData("NT:/SmartDashboard/Debug/Drivetrain/Odometer X Position (m)"),
+                    data.getData("NT:/SmartDashboard/Debug/Drivetrain/Odometer Y Position (m)")))
 
-        while (plot.isRunning()) {
+            .addPlot(Constants.SETTINGS
+                .setTitle("Encoder 1")
+                .setYRange(-5, 30))
+            .addSeries(
+                Constants.make(
+                    "Distance",
+                    data.getData("NT:/LiveWindow/Ungrouped/Encoder[1]/Distance")))
+            .addSeries(
+                Constants.make(
+                    "Speed",
+                    data.getData("NT:/LiveWindow/Ungrouped/Encoder[1]/Speed")))
+            .build(Constants.TITLE, Constants.WIDTH, Constants.HEIGHT);
+
+        for (;;) {
             plot.update();
             Thread.sleep(20);
         }

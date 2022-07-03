@@ -11,7 +11,7 @@ allprojects {
     }
 }
 
-final String STUYLIB_VERSION = 'v2022.7.2-fix'
+final String STUYLIB_VERSION = 'bg~plot-SNAPSHOT'
 
 dependencies {
     implementation "com.github.StuyPulse:StuyLib:${STUYLIB_VERSION}";
