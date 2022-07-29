@@ -28,17 +28,19 @@ public class Main {
         int WIDTH = 800;
         int HEIGHT = 600;
 
-        double MIN_X = 0.0;
-        double MAX_X = 16.5;
+        // 1 meter margin of error on each side
+        double MIN_X = -1.0;
+        double MAX_X = +17.5;
+    
+        double MIN_Y = -1.0;
+        double MAX_Y = +9.2;
 
-        double MIN_Y = 0.0;
-        double MAX_Y = 8.2;
-
-        Settings SETTINGS =
-                new Settings()
-                        .setAxes(TITLE, X_AXIS, Y_AXIS)
-                        .setXRange(MIN_X, MAX_X)
-                        .setYRange(MIN_Y, MAX_Y);
+        public static Settings defaultSettings() {
+            return new Settings()
+                    .setAxes(TITLE, X_AXIS, Y_AXIS)
+                    .setXRange(MIN_X, MAX_X)
+                    .setYRange(MIN_Y, MAX_Y);
+        }
 
         DataType[] NUMERIC = { DataType.DOUBLE, DataType.INTEGER, DataType.BOOLEAN };
 
@@ -89,7 +91,13 @@ public class Main {
         }
 
         public static Series make(String label, List<DataEntry> xData, List<DataEntry> yData) {
-            if (xData.get(0).isType(NUMERIC) && yData.get(0).isType(NUMERIC) && xData.size() == yData.size()) {
+            if (xData.get(0).isType(NUMERIC) && yData.get(0).isType(NUMERIC)) {
+                // make the two arrays the same size (only neccessary because target and measurement doesn't have same #)
+                if (xData.size() != yData.size()) {
+                    while (xData.size() > yData.size()) xData.remove(xData.size() - 1);
+                    while (yData.size() > xData.size()) yData.remove(yData.size() - 1);
+                }
+
                 Vector2D[] points = new Vector2D[xData.size()];
 
                 for (int i = 0; i < yData.size(); i++) {
@@ -98,6 +106,7 @@ public class Main {
 
                 return new DataSeries(label, points);
             } else {
+                System.out.println(xData.size() + ", " + yData.size());
                 return new TimeSeries(
                     new Config(label, CAPACITY),
                     new TimeSpan(MIN_X, MAX_X),
@@ -106,39 +115,46 @@ public class Main {
         }
     }
 
-    private static void printData(LoggedData data) {
-        data.getNames().forEach(name -> {
-            System.out.println(name);
-            // data.getData(name).forEach(record -> {
-            //     System.out.println(record.seconds + ",\"" + name + "\"," + record);
-            // });
-        });
-    }
-
     public static void main(String[] args) throws InterruptedException {
-        LoggedData data = LoggedData.fromFile("C:\\Users\\bengo\\Documents\\Programming\\DataLogVisualizer\\FRC_20220701_010412.wpilog");
-        
+        LoggedData data = LoggedData.fromFile("C:\\Users\\Ben\\Documents\\Programming\\robotics\\DataLogVisualizer\\FRC_SWERVE_20220726_031445.wpilog");
+        data.setPrefix("NT:/SmartDashboard/");
+
+        String[] modules = {"Top Left", "Top Right", "Bottom Left", "Bottom Right"};
+
         Plot plot = new Plot();
 
-        plot.addPlot(Constants.SETTINGS.setTitle("Robot Pos"))
-            .addSeries(
-                Constants.make(
-                    "Robot Position",
-                    data.getData("NT:/SmartDashboard/Debug/Drivetrain/Odometer X Position (m)"),
-                    data.getData("NT:/SmartDashboard/Debug/Drivetrain/Odometer Y Position (m)")))
+        plot.addPlot(Constants.defaultSettings().setAxes("Robot Pos", "x (m)", "y (m)"))
+                .addSeries(
+                    Constants.make(
+                        "Robot Position",
+                        data.getData("Swerve/Pose X"),
+                        data.getData("Swerve/Pose Y")))
+            
+            .addPlot(Constants.defaultSettings()
+                .setAxes("Angle Error", "time", "angle error (deg)")
+                .setXMax(Constants.MAX_X)
+                .setYRange(-180, 180))
 
-            .addPlot(Constants.SETTINGS
-                .setTitle("Encoder 1")
-                .setYRange(-5, 30))
-            .addSeries(
-                Constants.make(
-                    "Distance",
-                    data.getData("NT:/LiveWindow/Ungrouped/Encoder[1]/Distance")))
-            .addSeries(
-                Constants.make(
-                    "Speed",
-                    data.getData("NT:/LiveWindow/Ungrouped/Encoder[1]/Speed")))
-            .build(Constants.TITLE, Constants.WIDTH, Constants.HEIGHT);
+            .addPlot(Constants.defaultSettings()
+                .setAxes("Vel Error", "time", "vel error (m/s)")
+                .setXMax(Constants.MAX_X)
+                .setYRange(-20, 20));
+            
+        
+        for (String module : modules) {
+            plot.addSeries(
+                    "Angle Error",
+                    Constants.make(
+                        module,
+                        data.getData(module + "/Angle Error")))
+                .addSeries(
+                    "Vel Error",
+                    Constants.make(
+                        module,
+                        data.getData(module + "/Velocity Error")));
+        }
+
+        plot.build(Constants.TITLE, Constants.WIDTH, Constants.HEIGHT);
 
         for (;;) {
             plot.update();

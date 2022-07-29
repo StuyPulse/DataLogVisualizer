@@ -37,6 +37,8 @@ public class LoggedData {
 	private Map<String, List<DataEntry>> data;
 	private Map<String, String> types;
 
+	private String prefix;
+
 	public LoggedData() {
 		names = new HashMap<Integer, String>();
 		data = new HashMap<String, List<DataEntry>>();
@@ -70,11 +72,21 @@ public class LoggedData {
 	}
 
 	public List<DataEntry> getData(String name) {
+		name = prefix + name;
+
+		if (!data.containsKey(name)) {
+			System.err.println("Could not find data value with key " + name);
+		}
+
 		return data.get(name);
 	}
 
 	public String getType(String name) {
-		return types.get(name);
+		return types.get(prefix + name);
+	}
+
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
 	}
 
 }
