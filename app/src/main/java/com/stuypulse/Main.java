@@ -123,22 +123,22 @@ public class Main {
 
         Plot plot = new Plot();
 
-        plot.addPlot(Constants.defaultSettings().setAxes("Robot Pos", "x (m)", "y (m)"))
+        plot.addTab(Constants.defaultSettings().setAxes("Robot Pos", "x (m)", "y (m)"))
                 .addSeries(
                     Constants.make(
                         "Robot Position",
                         data.getData("Swerve/Pose X"),
                         data.getData("Swerve/Pose Y")))
             
-            .addPlot(Constants.defaultSettings()
+            .addTab(Constants.defaultSettings()
                 .setAxes("Angle Error", "time", "angle error (deg)")
                 .setXMax(Constants.MAX_X)
                 .setYRange(-180, 180))
 
-            .addPlot(Constants.defaultSettings()
+            .addTab(Constants.defaultSettings()
                 .setAxes("Vel Error", "time", "vel error (m/s)")
                 .setXMax(Constants.MAX_X)
-                .setYRange(-20, 20));
+                .setYRange(-5, 5));
             
         
         for (String module : modules) {
