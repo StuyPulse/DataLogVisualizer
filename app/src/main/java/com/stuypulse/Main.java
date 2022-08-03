@@ -116,7 +116,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        LoggedData data = LoggedData.fromFile("C:\\Users\\Ben\\Documents\\Programming\\robotics\\DataLogVisualizer\\FRC_SWERVE_20220726_031445.wpilog");
+        LoggedData data = LoggedData.fromFile("C:\\Users\\Ben\\Documents\\Programming\\robotics\\DataLogVisualizer\\FRC_SWERVE_20220726_031716.wpilog");
         data.setPrefix("NT:/SmartDashboard/");
 
         String[] modules = {"Top Left", "Top Right", "Bottom Left", "Bottom Right"};
@@ -128,30 +128,32 @@ public class Main {
                     Constants.make(
                         "Robot Position",
                         data.getData("Swerve/Pose X"),
-                        data.getData("Swerve/Pose Y")))
-            
-            .addTab(Constants.defaultSettings()
-                .setAxes("Angle Error", "time", "angle error (deg)")
-                .setXMax(Constants.MAX_X)
-                .setYRange(-180, 180))
-
-            .addTab(Constants.defaultSettings()
-                .setAxes("Vel Error", "time", "vel error (m/s)")
-                .setXMax(Constants.MAX_X)
-                .setYRange(-5, 5));
-            
+                        data.getData("Swerve/Pose Y")));
         
         for (String module : modules) {
-            plot.addSeries(
-                    "Angle Error",
-                    Constants.make(
-                        module,
-                        data.getData(module + "/Angle Error")))
-                .addSeries(
-                    "Vel Error",
-                    Constants.make(
-                        module,
-                        data.getData(module + "/Velocity Error")));
+            plot.addTab(Constants.defaultSettings()
+                        .setAxes(module + " Angle", "time", "angle (deg)")
+                        .setYRange(-180, 180))
+                    .addSeries(
+                        Constants.make(
+                            "Target",
+                            data.getData(module + "/Target Angle")))
+                    .addSeries(
+                        Constants.make(
+                            "Measurement",
+                            data.getData(module + "/Angle")))
+
+                .addTab(Constants.defaultSettings()
+                        .setAxes(module + " Velocity", "time", "vel (m/s)")
+                        .setYRange(-5, 5))
+                    .addSeries(
+                        Constants.make(
+                            "Target",
+                            data.getData(module + "/Target Velocity")))
+                    .addSeries(
+                        Constants.make(
+                            "Measurement",
+                            data.getData(module + "/Velocity")));
         }
 
         plot.build(Constants.TITLE, Constants.WIDTH, Constants.HEIGHT);
